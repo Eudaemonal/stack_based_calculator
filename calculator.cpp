@@ -17,6 +17,9 @@ std::deque<double> operandStack;
 std::deque<bool> dtypeStack;
 std::deque<std::string> operatorStack;
 
+std::deque<std::string> tokenStack; // tokenStack for repeat
+std::deque<std::string> tokenRepStack;
+
 
 std::deque<double> operandRepStack;
 std::deque<bool> dtypeRepStack;
@@ -62,17 +65,12 @@ void calculate(){
 	/*
 	std::cout<< "-------------OP Stack-----------" <<std::endl;
 	std::cout<< "size: "<< operatorStack.size()<<std::endl;
-	for(i=0;i<operandStack.size();i++){
-	std::cout<< " " << operandStack.at(i);
-	}
-	std::cout << std::endl;
-	for(i=0;i<operatorStack.size();i++){
-	std::cout<< " " << operatorStack.at(i);
+	for(i=0;i<tokenStack.size();i++){
+	std::cout<< " " << tokenStack.at(i);
 	}
 	std::cout << std::endl;
 	std::cout<< "=============OP Stack===========" <<std::endl;
 	*/
-	if(inRepeat == false){
 		if(s =="add"){
 			x = operandStack.back();
 			operandStack.pop_back();
@@ -133,24 +131,36 @@ void calculate(){
 				operandStack.push_back(x);
 			}
 		}
-	}
+
+		
+		
 		if(s=="repeat"){
 			// Handling nested repeat
 			if(inRepeat == false){
 			repeatTimes = (int)operandStack.back();
 			operandStack.pop_back();
 
-			std::cout<< "Repeat Times: "<<repeatTimes <<std::endl;//test
-			std::cout<< "Next: "<<operandStack.back() <<std::endl;//test
+			//std::cout<< "Repeat Times: "<<repeatTimes <<std::endl;//test
+			//std::cout<< "Next: "<<operandStack.back() <<std::endl;//test
 			
 			inRepeat = true;
 			}
 		}
 		else if(s=="endrepeat"){
 			inRepeat = false;
+
+			for(i=0;i<repeatTimes-1;++i){
+				for(n=tokenRepStack.size()-1;n>=0;n--){
+				tokenStack.push_back(tokenRepStack.at(n));
+				//std::cout<< "Push:" << tokenRepStack.at(n) <<std::endl; //test
+				}
+			}
+			tokenRepStack.clear();
+
+			/*
 			x = operandStack.back();
 			operandStack.pop_back();
-			/*
+			
 			for(i=0;i<repeatTimes-1;++i){
 				for(n=0;n<operandRepStack.size();++n){
 				operandStack.push_back(operandRepStack.at(n));
@@ -166,10 +176,10 @@ void calculate(){
 			operandRepStack.clear();
 			dtypeRepStack.clear();
 			operatorRepStack.clear();
-			runRepeat = true;
 			*/
 			
 		}
+		
 		
 
 }
@@ -187,22 +197,10 @@ void process(std::string s){
 
 		operandStack.push_back(std::stod(s));
 		dtypeStack.push_back(dtype);
-		if(inRepeat){
-			operandRepStack.push_front(std::stod(s));
-			dtypeRepStack.push_front(dtype);
-		}
 	}
 	else if(isoperator(s)){
 		operatorStack.push_back(s);
-		
-		if(inRepeat && s!="endrepeat"){
-			operatorRepStack.push_front(s);
-		}
-		while(operatorStack.size()!=0){
 		calculate();
-		}
-		
-		
 
 	}
 	else{
@@ -227,8 +225,18 @@ int main(int argc, char* argv[]) {
 
 	// read the file while we have input.
 	while (in >> s) {
-		//std::cout<< s <<std::endl;
+		tokenStack.push_front(s);
+		if(inRepeat && s!="endrepeat"){
+			tokenRepStack.push_front(s);
+		}
+		
+		while(tokenStack.size()!=0){
+		s = tokenStack.front();
+		tokenStack.pop_front();
+
 		process(s);
+
+		}
 
 	}
 	in.close();
