@@ -9,6 +9,15 @@
 #include <stack>
 #include <cmath>
 
+
+
+/*
+ * Test: 
+ * Boundary: div 0, sqrt [-Inf, 0]
+ * Nested Repeat
+ *
+ */
+
 // init vector of all operators
 const char* operators[] = {"add", "sub", "mult", "div", "sqrt", "pop", "reverse", "repeat", "endrepeat"};
 std::vector<std::string> oplib(operators, std::end(operators));
@@ -159,7 +168,6 @@ void calculate(){
 				dtypeStack.pop_back();
 				reverseTypeQueue.push_front(a);
 
-				
 			}
 			for(i=0;i<n;++i){
 				x = reverseQueue.back();
@@ -174,10 +182,6 @@ void calculate(){
 			repeatTimes = (int)operandStack.back();
 			operandStack.pop_back();
 			dtypeStack.pop_back();
-
-			//std::cout<< "Repeat Times: "<<repeatTimes <<std::endl;//test
-			//std::cout<< "Next: "<<operandStack.back() <<std::endl;//test
-			
 			inRepeat++;
 		}
 		else if(s=="endrepeat"){
@@ -186,9 +190,7 @@ void calculate(){
 			if(inRepeat==0){
 			for(i=0;i<repeatTimes-1;++i){
 				for(n=tokenRepStack.size()-1;n>=0;n--){
-				tokenStack.push_back(tokenRepStack.at(n));
-				//std::cout<< "Push:" << tokenRepStack.at(n) <<std::endl; //test
-				}
+				tokenStack.push_back(tokenRepStack.at(n));							       }
 			}
 			tokenRepStack.clear();
 			}
