@@ -1,6 +1,7 @@
 /* Copyright (c) 2016-2017 Eudaemon <eudaemonal@gmail.com> */
 
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <algorithm>
@@ -13,7 +14,6 @@
 
 /*
  * Test: 
- * Boundary: div 0, sqrt [-Inf, 0]
  * Nested Repeat
  *
  */
@@ -44,26 +44,33 @@ bool isoperator(std::string op){
 }
 
 // if a string is a digit
-// invalid: x. or .x
+// invalid: x. or .x or -.x or -x.
 bool isdigit(std::string s){
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && (std::isdigit(*it)||(*it=='.'&& it !=s.end()-1 && it !=s.begin()))) ++it;
-    return !s.empty() && it == s.end();
+	std::string::const_iterator it = s.begin();
+	if(*it=='-'){ // negative number
+		s.erase(s.begin());
+	}
+	it = s.begin();
+	while (it != s.end() && (std::isdigit(*it)||(*it=='.'&& it !=s.end()-1 && it !=s.begin()))) ++it;
+	return !s.empty() && it == s.end();
 }
 
 // if a string is a int
 bool isint(std::string s){
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && (std::isdigit(*it))) ++it;
-    return !s.empty() && it == s.end();
-
+	std::string::const_iterator it = s.begin();
+	if(*it=='-'){ // negative number
+		s.erase(s.begin());
+	}
+	it = s.begin();
+	while (it != s.end() && (std::isdigit(*it))) ++it;
+	return !s.empty() && it == s.end();
 }
 
 
 // basic display
 void basicdisplay(char opt){
 	bool a, b, c;
-	double x, y, z;
+	double x, y, z=0;
 	a = dtypeStack.back();
 	dtypeStack.pop_back();
 	b = dtypeStack.back();
@@ -81,8 +88,15 @@ void basicdisplay(char opt){
 		z = x - y;
 	else if(opt=='*')
 		z = x * y;
-	else if(opt=='/')
-		z = x / y;
+	else if(opt=='/'){
+		if(y==0){
+			std::cerr << "Error: divisor must not equal to 0" <<std::endl;
+			exit (EXIT_FAILURE);
+		}else{
+			z = x / y;
+		}
+	}
+	
 
 	if(!a)
 		std::cout << (int)x;
@@ -128,6 +142,7 @@ void calculate(){
 	std::cout << std::endl;
 	std::cout<< "=============OP Stack===========" <<std::endl;
 	*/
+	if(inRepeat <= 1){
 		if(s =="add"){
 			basicdisplay('+');
 		}
@@ -146,9 +161,17 @@ void calculate(){
 			operandStack.pop_back();
 			a = dtypeStack.back();
 			dtypeStack.pop_back();
+			if(x<0){
+				std::cerr << "Error: Square root produces complex number, not supported" <<std::endl;
+				exit (EXIT_FAILURE);
+			}else{
+				z = sqrt(x) ;
+			}
+			if(a)
+				std::cout <<"sqrt " << x << " = "<< z <<std::endl;
+			else
+				std::cout <<"sqrt " << (int)x << " = "<< (int)z <<std::endl;
 
-			z = sqrt(x) ;
-			std::cout <<"sqrt " << x << " = "<< z <<std::endl;
 			operandStack.push_back(z);
 			dtypeStack.push_back(a);		
 		}
@@ -178,15 +201,19 @@ void calculate(){
 				dtypeStack.push_back(a);
 			}
 		}
-		else if(s=="repeat"){
+	}
+		if(s=="repeat"){
 			repeatTimes = (int)operandStack.back();
 			operandStack.pop_back();
 			dtypeStack.pop_back();
 			inRepeat++;
+			//std::cout << "Repeat: "<<inRepeat <<std::endl;//test
 		}
 		else if(s=="endrepeat"){
 			if(inRepeat > 0)
 				inRepeat --;
+			//std::cout << "EndRepeat: "<<inRepeat <<std::endl;//test
+
 			if(inRepeat==0){
 			for(i=0;i<repeatTimes-1;++i){
 				for(n=tokenRepStack.size()-1;n>=0;n--){
@@ -235,7 +262,8 @@ void process(std::string s){
 
 	}
 	else{
-		std::cout << "Invalid Token!:" <<s << std::endl;
+		std::cerr << "Invalid Token!: " <<s << std::endl;
+		exit (EXIT_FAILURE);
 	}
 }
 
@@ -257,16 +285,22 @@ int main(int argc, char* argv[]) {
 	// read the file while we have input.
 	while (in >> s) {
 		tokenStack.push_front(s);
-		if(inRepeat > 0 && (s!="endrepeat" && inRepeat ==1)){
+		if(inRepeat > 0 && s!="endrepeat"){
 			tokenRepStack.push_front(s);
+			//std::cout << "push1------->: "<<s <<std::endl; //test
+		}
+		else if(s=="endrepeat" && inRepeat>1){
+			tokenRepStack.push_front(s);
+			//std::cout << "push2------->:" << s <<std::endl; //test
 		}
 		
 		while(tokenStack.size()!=0){
 		s = tokenStack.front();
 		tokenStack.pop_front();
 
+		//std::cout << "Process: "<< s <<std::endl;//test
 		process(s);
-
+		
 		}
 	}
 	in.close();
