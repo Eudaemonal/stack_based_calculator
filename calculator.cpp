@@ -43,7 +43,7 @@ bool isdigit(std::string s){
 		s.erase(s.begin());
 	}
 	it = s.begin();
-	while (it != s.end() && (std::isdigit(*it)||(*it=='.'&& it !=s.end()-1 && it !=s.begin()))) ++it;
+	while (it != s.end() && (std::isdigit(*it)||(*it=='.'&& it !=s.end()-1))) ++it;
 	return !s.empty() && it == s.end();
 }
 
@@ -95,11 +95,17 @@ void basicdisplay(char opt){
 	if(!b)	std::cout << (int)y;
 	else	std::cout << y;
 	std::cout <<" = ";
-	if(!c)	std::cout << (int)z;
-	else	std::cout << z;
+	if(!c){
+		std::cout << (int)z;
+		operandStack.push_back((int)z);
+
+	}
+	else{
+		std::cout << z;
+		operandStack.push_back(z);
+	}
 	std::cout << std::endl;
 	
-	operandStack.push_back(z);
 	dtypeStack.push_back(c);
 
 }
@@ -138,10 +144,16 @@ void calculate(){
 		}else{
 			z = sqrt(x) ;
 		}
-		if(a)	std::cout <<"sqrt " << x << " = "<< z <<std::endl;
-		else	std::cout <<"sqrt " << (int)x << " = "<< (int)z <<std::endl;
+		if(a){
+			std::cout <<"sqrt " << x << " = "<< z <<std::endl;
+			operandStack.push_back(z);
 
-		operandStack.push_back(z);
+		}
+		else{
+			std::cout <<"sqrt " << (int)x << " = "<< (int)z <<std::endl;
+			operandStack.push_back((int)z);
+		}
+
 		dtypeStack.push_back(a);		
 	}
 	else if(s=="pop"){
