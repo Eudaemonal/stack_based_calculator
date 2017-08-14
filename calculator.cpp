@@ -220,10 +220,8 @@ int main(int argc, char* argv[]) {
 		tokenStack.pop_front();
 
 		// Store repeat token into a seprate stack
-		if(inRepeat > 0){
+		if(inRepeat > 0)
 			tokenRepStack.push_front(s);
-			//std::cout << "push1------->: "<<s <<std::endl; //test
-		}
 
 		if(s=="repeat"){
 			if(inRepeat == 0){
@@ -233,7 +231,6 @@ int main(int argc, char* argv[]) {
 			}
 			
 			inRepeat++;
-			//std::cout <<repeatTimes<< " Repeat: "<<inRepeat <<std::endl;//test
 		}
 		else if(s=="endrepeat"){
 			if(inRepeat > 0)
@@ -243,29 +240,14 @@ int main(int argc, char* argv[]) {
 				for(int n=0; n<tokenRepStack.size();++n){
 				tokenStack.push_front(tokenRepStack.at(n));
 				}
-				//std::cout << "push2<------: "<<i <<std::endl;//test
 			}
 			tokenRepStack.clear();
 			}
-			//std::cout <<repeatTimes<< " EndRepeat: "<<inRepeat <<std::endl;//test
 		}
 
-	/*
-	std::cout<< "\n\n-------------TK Stack-----------" <<std::endl;
-	std::cout<< "size: "<< tokenStack.size()<<std::endl;
-	for(int i=0;i<tokenStack.size();i++){
-	std::cout<< " " << tokenStack.at(i);
-	}
-	std::cout << std::endl;
-	std::cout<< "=============TK Stack===========\n\n" <<std::endl;
-	*/
+		if(inRepeat==0)
+			process(s);
 
-
-		if(inRepeat==0){
-		//std::cout << "Process: "<< s <<std::endl;//test
-		process(s);
-		}
 	}
 	in.close();
-	
 }
