@@ -10,14 +10,6 @@
 #include <stack>
 #include <cmath>
 
-
-
-/*
- * Test: 
- * Nested Repeat
- *
- */
-
 // init vector of all operators
 const char* operators[] = {"add", "sub", "mult", "div", "sqrt", "pop", "reverse", "repeat", "endrepeat"};
 std::vector<std::string> oplib(operators, std::end(operators));
@@ -135,7 +127,7 @@ void calculate(){
 
 	/*
 	std::cout<< "-------------OP Stack-----------" <<std::endl;
-	std::cout<< "size: "<< operatorStack.size()<<std::endl;
+	std::cout<< "size: "<< tokenStack.size()<<std::endl;
 	for(i=0;i<tokenStack.size();i++){
 	std::cout<< " " << tokenStack.at(i);
 	}
@@ -202,6 +194,8 @@ void calculate(){
 			}
 		}
 	}
+
+	/*
 		if(s=="repeat"){
 			repeatTimes = (int)operandStack.back();
 			operandStack.pop_back();
@@ -215,13 +209,15 @@ void calculate(){
 			//std::cout << "EndRepeat: "<<inRepeat <<std::endl;//test
 
 			if(inRepeat==0){
-			for(i=0;i<repeatTimes-1;++i){
-				for(n=tokenRepStack.size()-1;n>=0;n--){
-				tokenStack.push_back(tokenRepStack.at(n));							       }
+			forint (i=0;i<repeatTimes-1;++i){
+				for(int n=tokenRepStack.size()-1;n>=0;n--){
+				tokenStack.push_back(tokenRepStack.at(n));
+				}
 			}
 			tokenRepStack.clear();
 			}
 		}
+	*/
 
 }
 
@@ -237,29 +233,13 @@ void process(std::string s){
 		else
 			dtype = 1;
 
-	/*
-	std::cout<< "=============OP Stack===========" <<std::endl;	
-	std::cout<< "size: "<< operandStack.size()<< "  size: "<< dtypeStack.size()<<std::endl;
-	for(int i=0;i<operandStack.size();i++){
-	std::cout<< " " << operandStack.at(i);
-	}
-	std::cout << std::endl;
-	for(int i=0;i<dtypeStack.size();i++){
-	std::cout<< " " << dtypeStack.at(i);
-	}
-	std::cout << std::endl;
-	std::cout<< "-------------OP Stack-----------" <<std::endl;
-	*/
-
 		operandStack.push_back(std::stod(s));
 		dtypeStack.push_back(dtype);
-
-
+	
 	}
 	else if(isoperator(s)){
 		operatorStack.push_back(s);
 		calculate();
-
 	}
 	else{
 		std::cerr << "Invalid Token!: " <<s << std::endl;
@@ -270,7 +250,6 @@ void process(std::string s){
 
 
 int main(int argc, char* argv[]) {
-	
 	// setup the print out format for the precision required.
 	std::cout.setf(std::ios::fixed,std::ios::floatfield);
 	std::cout.precision(3);
@@ -284,24 +263,76 @@ int main(int argc, char* argv[]) {
 
 	// read the file while we have input.
 	while (in >> s) {
-		tokenStack.push_front(s);
-		if(inRepeat > 0 && s!="endrepeat"){
-			tokenRepStack.push_front(s);
-			//std::cout << "push1------->: "<<s <<std::endl; //test
-		}
-		else if(s=="endrepeat" && inRepeat>1){
-			tokenRepStack.push_front(s);
-			//std::cout << "push2------->:" << s <<std::endl; //test
-		}
-		
-		while(tokenStack.size()!=0){
+		tokenStack.push_back(s);
+	}
+
+	
+	while(!tokenStack.empty()){
 		s = tokenStack.front();
 		tokenStack.pop_front();
 
-		//std::cout << "Process: "<< s <<std::endl;//test
-		process(s);
-		
+		if(inRepeat > 0){
+			tokenRepStack.push_front(s);
+			std::cout << "push1------->: "<<s <<std::endl; //test
 		}
+
+		
+		if(s=="repeat"){
+			if(inRepeat == 0){
+				repeatTimes = (int)operandStack.back();
+				operandStack.pop_back();
+				dtypeStack.pop_back();
+			}
+
+			
+			inRepeat++;
+			std::cout <<repeatTimes<< " Repeat: "<<inRepeat <<std::endl;//test
+		}
+		else if(s=="endrepeat"){
+			//tokenStack.pop_front();
+			if(inRepeat > 0)
+				inRepeat --;
+			if(inRepeat==0){
+			for(int i=0;i<repeatTimes;++i){
+				for(int n=0; n<tokenRepStack.size();++n){
+				tokenStack.push_front(tokenRepStack.at(n));
+				}
+				std::cout << "push2<------: "<<i <<std::endl;//test
+			}
+			tokenRepStack.clear();
+			}
+			std::cout <<repeatTimes<< " EndRepeat: "<<inRepeat <<std::endl;//test
+
+
+		}
+
+		
+		/*
+		if(inRepeat > 0 && s!="repeat"){
+			tokenRepStack.push_front(s);
+			//tokenStack.pop_front();
+			std::cout << "push1------->: "<<s <<std::endl; //test
+		}
+		*/
+
+	
+	std::cout<< "\n\n-------------TK Stack-----------" <<std::endl;
+	std::cout<< "size: "<< tokenStack.size()<<std::endl;
+	for(int i=0;i<tokenStack.size();i++){
+	std::cout<< " " << tokenStack.at(i);
+	}
+	std::cout << std::endl;
+	std::cout<< "=============TK Stack===========\n\n" <<std::endl;
+	
+
+
+		if(inRepeat==0){
+
+		std::cout << "Process: "<< s <<std::endl;//test
+		process(s);
+		}
+		
+		
 	}
 	in.close();
 	
