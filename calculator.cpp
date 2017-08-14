@@ -59,7 +59,7 @@ bool isint(std::string s){
 }
 
 
-// basic display
+// basic calculation display
 void basicdisplay(char opt){
 	bool a, b, c;
 	double x, y, z=0;
@@ -88,25 +88,15 @@ void basicdisplay(char opt){
 			z = x / y;
 		}
 	}
-	
 
-	if(!a)
-		std::cout << (int)x;
-	else
-		std::cout << x;
+	if(!a)	std::cout << (int)x;
+	else	std::cout << x;
 	std::cout <<" "<<opt<<" ";
-
-	if(!b)
-		std::cout << (int)y;
-	else
-		std::cout << y;
-
+	if(!b)	std::cout << (int)y;
+	else	std::cout << y;
 	std::cout <<" = ";
-
-	if(!c)
-		std::cout << (int)z;
-	else
-		std::cout << z;
+	if(!c)	std::cout << (int)z;
+	else	std::cout << z;
 	std::cout << std::endl;
 	
 	operandStack.push_back(z);
@@ -114,7 +104,7 @@ void basicdisplay(char opt){
 
 }
 
-
+// calculate tokens and store result back into stack
 void calculate(){
 	double x, z;
        	int i, n = 0;	// numbers of reverse
@@ -125,107 +115,66 @@ void calculate(){
 	std::string s = operatorStack.back();
 	operatorStack.pop_back();
 
-	/*
-	std::cout<< "-------------OP Stack-----------" <<std::endl;
-	std::cout<< "size: "<< tokenStack.size()<<std::endl;
-	for(i=0;i<tokenStack.size();i++){
-	std::cout<< " " << tokenStack.at(i);
+	if(s =="add"){
+		basicdisplay('+');
 	}
-	std::cout << std::endl;
-	std::cout<< "=============OP Stack===========" <<std::endl;
-	*/
-	if(inRepeat <= 1){
-		if(s =="add"){
-			basicdisplay('+');
+	else if(s=="sub"){
+		basicdisplay('-');
+	}
+	else if(s=="mult"){
+		basicdisplay('*');
+	}
+	else if(s=="div"){
+		basicdisplay('/');
+	}
+	else if(s=="sqrt"){
+		x = operandStack.back();
+		operandStack.pop_back();
+		a = dtypeStack.back();
+		dtypeStack.pop_back();
+		if(x<0){
+			std::cerr << "Error: Square root produces complex number, not supported" <<std::endl;
+			exit (EXIT_FAILURE);
+		}else{
+			z = sqrt(x) ;
 		}
-		else if(s=="sub"){
-			basicdisplay('-');
-		}
-		else if(s=="mult"){
-			basicdisplay('*');
-		}
-		else if(s=="div"){
-			basicdisplay('/');
+		if(a)	std::cout <<"sqrt " << x << " = "<< z <<std::endl;
+		else	std::cout <<"sqrt " << (int)x << " = "<< (int)z <<std::endl;
 
-		}
-		else if(s=="sqrt"){
+		operandStack.push_back(z);
+		dtypeStack.push_back(a);		
+	}
+	else if(s=="pop"){
+		operandStack.pop_back();
+		dtypeStack.pop_back();
+	}
+	else if(s=="reverse"){
+		n = (int)operandStack.back();
+		operandStack.pop_back();
+		dtypeStack.pop_back();
+		for(i=0;i<n;++i){
 			x = operandStack.back();
 			operandStack.pop_back();
+			reverseQueue.push_front(x);
 			a = dtypeStack.back();
 			dtypeStack.pop_back();
-			if(x<0){
-				std::cerr << "Error: Square root produces complex number, not supported" <<std::endl;
-				exit (EXIT_FAILURE);
-			}else{
-				z = sqrt(x) ;
-			}
-			if(a)
-				std::cout <<"sqrt " << x << " = "<< z <<std::endl;
-			else
-				std::cout <<"sqrt " << (int)x << " = "<< (int)z <<std::endl;
-
-			operandStack.push_back(z);
-			dtypeStack.push_back(a);		
+			reverseTypeQueue.push_front(a);
 		}
-		else if(s=="pop"){
-			operandStack.pop_back();
-			dtypeStack.pop_back();
-		}
-		else if(s=="reverse"){
-			n = (int)operandStack.back();
-			operandStack.pop_back();
-			dtypeStack.pop_back();
-			for(i=0;i<n;++i){
-				x = operandStack.back();
-				operandStack.pop_back();
-				reverseQueue.push_front(x);
-				a = dtypeStack.back();
-				dtypeStack.pop_back();
-				reverseTypeQueue.push_front(a);
-
-			}
-			for(i=0;i<n;++i){
-				x = reverseQueue.back();
-				reverseQueue.pop_back();
-				operandStack.push_back(x);
-				a = reverseTypeQueue.back();
-				reverseTypeQueue.pop_back();
-				dtypeStack.push_back(a);
-			}
+		for(i=0;i<n;++i){
+			x = reverseQueue.back();
+			reverseQueue.pop_back();
+			operandStack.push_back(x);
+			a = reverseTypeQueue.back();
+			reverseTypeQueue.pop_back();
+			dtypeStack.push_back(a);
 		}
 	}
-
-	/*
-		if(s=="repeat"){
-			repeatTimes = (int)operandStack.back();
-			operandStack.pop_back();
-			dtypeStack.pop_back();
-			inRepeat++;
-			//std::cout << "Repeat: "<<inRepeat <<std::endl;//test
-		}
-		else if(s=="endrepeat"){
-			if(inRepeat > 0)
-				inRepeat --;
-			//std::cout << "EndRepeat: "<<inRepeat <<std::endl;//test
-
-			if(inRepeat==0){
-			forint (i=0;i<repeatTimes-1;++i){
-				for(int n=tokenRepStack.size()-1;n>=0;n--){
-				tokenStack.push_back(tokenRepStack.at(n));
-				}
-			}
-			tokenRepStack.clear();
-			}
-		}
-	*/
-
 }
 
 
-
+// Process input token
 void process(std::string s){
 	bool dtype = 0; // int: 0 ;double: 1
-
 
 	if(isdigit(s)){
 		if(isint(s))
@@ -265,31 +214,28 @@ int main(int argc, char* argv[]) {
 	while (in >> s) {
 		tokenStack.push_back(s);
 	}
-
-	
+	// process input tokenStack and deal with nested repeat
 	while(!tokenStack.empty()){
 		s = tokenStack.front();
 		tokenStack.pop_front();
 
+		// Store repeat token into a seprate stack
 		if(inRepeat > 0){
 			tokenRepStack.push_front(s);
-			std::cout << "push1------->: "<<s <<std::endl; //test
+			//std::cout << "push1------->: "<<s <<std::endl; //test
 		}
 
-		
 		if(s=="repeat"){
 			if(inRepeat == 0){
 				repeatTimes = (int)operandStack.back();
 				operandStack.pop_back();
 				dtypeStack.pop_back();
 			}
-
 			
 			inRepeat++;
-			std::cout <<repeatTimes<< " Repeat: "<<inRepeat <<std::endl;//test
+			//std::cout <<repeatTimes<< " Repeat: "<<inRepeat <<std::endl;//test
 		}
 		else if(s=="endrepeat"){
-			//tokenStack.pop_front();
 			if(inRepeat > 0)
 				inRepeat --;
 			if(inRepeat==0){
@@ -297,25 +243,14 @@ int main(int argc, char* argv[]) {
 				for(int n=0; n<tokenRepStack.size();++n){
 				tokenStack.push_front(tokenRepStack.at(n));
 				}
-				std::cout << "push2<------: "<<i <<std::endl;//test
+				//std::cout << "push2<------: "<<i <<std::endl;//test
 			}
 			tokenRepStack.clear();
 			}
-			std::cout <<repeatTimes<< " EndRepeat: "<<inRepeat <<std::endl;//test
-
-
+			//std::cout <<repeatTimes<< " EndRepeat: "<<inRepeat <<std::endl;//test
 		}
 
-		
-		/*
-		if(inRepeat > 0 && s!="repeat"){
-			tokenRepStack.push_front(s);
-			//tokenStack.pop_front();
-			std::cout << "push1------->: "<<s <<std::endl; //test
-		}
-		*/
-
-	
+	/*
 	std::cout<< "\n\n-------------TK Stack-----------" <<std::endl;
 	std::cout<< "size: "<< tokenStack.size()<<std::endl;
 	for(int i=0;i<tokenStack.size();i++){
@@ -323,18 +258,14 @@ int main(int argc, char* argv[]) {
 	}
 	std::cout << std::endl;
 	std::cout<< "=============TK Stack===========\n\n" <<std::endl;
-	
+	*/
 
 
 		if(inRepeat==0){
-
-		std::cout << "Process: "<< s <<std::endl;//test
+		//std::cout << "Process: "<< s <<std::endl;//test
 		process(s);
 		}
-		
-		
 	}
 	in.close();
 	
 }
-
